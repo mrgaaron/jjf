@@ -1,9 +1,14 @@
 from abc import ABC, abstractmethod
 from astropy import units as u
 from collections.abc import Coroutine
+from dataclasses import dataclass
 from functools import total_ordering
 from enum import StrEnum
 import numpy as np
+
+
+class MusicError(Exception):
+    pass
 
 
 @total_ordering
@@ -14,7 +19,7 @@ class Pitch:
         self.name = name
 
     def ratio(self, other):
-        return 1200 * np.log2(other.frequency / self.frequency)
+        return np.round(other.frequency / self.frequency, 2)
 
     def __lt__(self, other):
         return self.frequency < other.frequency
@@ -27,11 +32,6 @@ class Pitch:
             return f"Pitch({self.frequency})"
         else:
             return f"Pitch({self.frequency}{{{self.name}}})"
-
-
-class DistributionType(StrEnum):
-    GEOMETRIC = "geometric"
-    UNEQUAL = "unequal"
 
 
 class Temperament(ABC):
@@ -64,8 +64,76 @@ class UnequalTemperament(Temperament):
         ...
 
 
-class MusicError(Exception):
-    pass
+@dataclass
+class Dyad:
+    pitch1: Pitch
+    pitch2: Pitch
+
+    @property
+    def pitches(self):
+        return [self.pitch1, self.pitch2]
+
+
+@dataclass
+class Triad:
+    pitch1: Pitch
+    pitch2: Pitch
+    pitch3: Pitch
+
+    @property
+    def pitches(self):
+        return [self.pitch1, self.pitch2, self.pitch3]
+
+
+@dataclass
+class Tetrad:
+    pitch1: Pitch
+    pitch2: Pitch
+    pitch3: Pitch
+    pitch4: Pitch
+
+    @property
+    def pitches(self):
+        return [self.pitch1, self.pitch2, self.pitch3, self.pitch4]
+
+
+@dataclass
+class Pentad:
+    pitch1: Pitch
+    pitch2: Pitch
+    pitch3: Pitch
+    pitch4: Pitch
+    pitch5: Pitch
+
+    @property
+    def pitches(self):
+        return [self.pitch1, self.pitch2, self.pitch3, self.pitch4, self.pitch5]
+
+
+@dataclass
+class Hexad:
+    pitch1: Pitch
+    pitch2: Pitch
+    pitch3: Pitch
+    pitch4: Pitch
+    pitch5: Pitch
+    pitch6: Pitch
+
+    @property
+    def pitches(self):
+        return [
+            self.pitch1,
+            self.pitch2,
+            self.pitch3,
+            self.pitch4,
+            self.pitch5,
+            self.pitch6,
+        ]
+
+
+@dataclass
+class ToneRow:
+    pitches: list[Pitch]
 
 
 class PitchSystem:

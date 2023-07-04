@@ -19,3 +19,14 @@ def test_equal_temperament_pitches():
     assert isclose(all_pitches[-1].frequency, 880 * u.Hz)
     for i in range(1, len(all_pitches)):
         assert all_pitches[i].frequency / all_pitches[i - 1].frequency == beta
+
+
+def test_pitch_ratios():
+    # octave from A440 to A880
+    pitch1 = Pitch(440 * u.Hz)
+    pitch2 = Pitch(659 * u.Hz)
+    pitch3 = Pitch(880 * u.Hz)
+
+    assert pitch1.ratio(pitch2) == 3 / 2
+    assert pitch1.ratio(pitch3) == 2 / 1
+    assert isclose(pitch2.ratio(pitch3), 4 / 3, rtol=0.01)
