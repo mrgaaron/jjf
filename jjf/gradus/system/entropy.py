@@ -1,4 +1,3 @@
-from jjf.gradus.pitch import Pitch
 from scipy.signal import convolve
 from scipy.stats import norm
 import numpy as np
@@ -49,3 +48,44 @@ def harmonic_entropy(ratio_interval, spread=0.01, min_tol=1e-15):
         HE[i] = -np.sum(P[ind] * np.log2(P[ind]))
 
     return weight_ratios, HE
+
+
+class EntropyMatrix:
+    def __init__(self, system):
+        self.system = system
+        self.interval = self.system.pitch_system.lowest.ratio(
+            self.system.pitch_system.highest
+        )
+        self.pitches = list(self.system.pitches)
+
+    def matrix(self):
+        interval_size = 3  # no more than 2 octaves or the calculation loses coherence
+        interval_spacing = self.system.pitch_system.temperament.interval_spacing()
+        arange = np.arange(0.5, interval_size, interval_spacing)
+        below_unison = len(arange[arange < 1])
+        above_unison = len(arange[arange > 1])
+        mtx = np.zeros((len(self.pitches), len(self.pitches)))
+
+        for i, pitch in enumerate(self.pitches):
+            _, entropy_curve = harmonic_entropy(
+                np.arange(0.5, interval_size, interval_spacing)
+            )
+            # don't include pitches aboved or below unison if they aren't in the musical system
+            if i < below_unison:
+                corrected = entropy_curve[min(below_unison - i, 0) :]
+                padded = np.pad(
+                    entropy_curve,
+                    (i, mtx.shape[0] - corrected.shape[0] - i),
+                    "constant",
+                    constant_values=0,
+                )
+            else:
+                padded = np.pad(
+                    entropy_curve,
+                    (i, max(mtx.shape[0] - entropy_curve.shape[0] - i, 0)),
+                    "constant",
+                    constant_values=0,
+                )[: mtx.shape[0]]
+
+            mtx[0:, i] = padded
+        return mtx

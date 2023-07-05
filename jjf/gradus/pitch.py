@@ -41,10 +41,15 @@ class Temperament(ABC):
     ) -> Coroutine[Pitch, Pitch, list[Pitch]]:
         ...
 
+    @abstractmethod
+    def interval_spacing(self) -> int:
+        ...
+
 
 class EqualTemperament(Temperament):
-    def __init__(self, beta: float):
+    def __init__(self, beta: float, notes_per_octave: int):
         self.beta = beta
+        self.notes_per_octave = notes_per_octave
 
     def pitches(
         self, lowest: Pitch, highest: Pitch
@@ -54,6 +59,9 @@ class EqualTemperament(Temperament):
             yield current
             current = Pitch(current.frequency * self.beta)
         yield current  # make sure we yield the final value
+
+    def interval_spacing(self) -> int:
+        return 1 / self.notes_per_octave
 
 
 class UnequalTemperament(Temperament):

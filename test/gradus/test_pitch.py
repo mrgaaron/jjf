@@ -12,7 +12,7 @@ def test_equal_temperament_pitches():
 
     # equal temperament with beta = 2^(1/12), i.e. the standard 12-tone scale or 12-TET
     beta = np.power(2, 1 / 12)
-    temperament = EqualTemperament(beta)
+    temperament = EqualTemperament(beta, 12)
     all_pitches = list(temperament.pitches(lowest, highest))
     assert len(all_pitches) == 13
     assert isclose(all_pitches[0].frequency, 440 * u.Hz)

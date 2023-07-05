@@ -25,7 +25,9 @@ BETA = np.power(2, 1 / len(NOTE_NAMES))
 
 class WesternSystem:
     def __init__(self) -> None:
-        self.pitch_system = PitchSystem(LOWEST, HIGHEST, EqualTemperament(BETA))
+        self.pitch_system = PitchSystem(
+            LOWEST, HIGHEST, EqualTemperament(BETA, len(NOTE_NAMES))
+        )
 
     @property
     def pitches(self) -> list[Pitch]:
