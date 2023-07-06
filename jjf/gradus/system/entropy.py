@@ -50,6 +50,15 @@ def harmonic_entropy(ratio_interval, spread=0.01, min_tol=1e-15):
     return weight_ratios, HE
 
 
+def shift(arr, num, fill_value=np.nan):
+    arr = np.roll(arr, num)
+    if num < 0:
+        arr[num:] = fill_value
+    elif num > 0:
+        arr[:num] = fill_value
+    return arr
+
+
 class EntropyMatrix:
     def __init__(self, system):
         self.system = system
@@ -63,29 +72,44 @@ class EntropyMatrix:
         interval_spacing = self.system.pitch_system.temperament.interval_spacing()
         arange = np.arange(0.5, interval_size, interval_spacing)
         below_unison = len(arange[arange < 1])
-        above_unison = len(arange[arange > 1])
         mtx = np.zeros((len(self.pitches), len(self.pitches)))
+        _, entropy_curve = harmonic_entropy(
+            np.arange(0.5, interval_size, interval_spacing)
+        )
 
         for i, pitch in enumerate(self.pitches):
-            _, entropy_curve = harmonic_entropy(
-                np.arange(0.5, interval_size, interval_spacing)
-            )
             # don't include pitches aboved or below unison if they aren't in the musical system
             if i < below_unison:
-                corrected = entropy_curve[min(below_unison - i, 0) :]
                 padded = np.pad(
                     entropy_curve,
-                    (i, mtx.shape[0] - corrected.shape[0] - i),
+                    (0, mtx.shape[0] - entropy_curve.shape[0]),
                     "constant",
                     constant_values=0,
                 )
+                corrected = shift(padded, -(below_unison - i), fill_value=0.0)
             else:
-                padded = np.pad(
-                    entropy_curve,
-                    (i, max(mtx.shape[0] - entropy_curve.shape[0] - i, 0)),
-                    "constant",
-                    constant_values=0,
-                )[: mtx.shape[0]]
-
-            mtx[0:, i] = padded
+                # TODO: this is bugged for notes over A7, not handling the upper bound correctly
+                if mtx.shape[0] - entropy_curve.shape[0] - i + below_unison < 0:
+                    padded = np.pad(
+                        entropy_curve,
+                        (mtx.shape[0] - below_unison, 0),
+                        "constant",
+                        constant_values=0,
+                    )
+                    corrected = shift(
+                        padded,
+                        abs(mtx.shape[0] - entropy_curve.shape[0] - i - below_unison),
+                        fill_value=0.0,
+                    )[-128:]
+                else:
+                    corrected = np.pad(
+                        entropy_curve,
+                        (
+                            i - below_unison,
+                            mtx.shape[0] - entropy_curve.shape[0] - i + below_unison,
+                        ),
+                        "constant",
+                        constant_values=0,
+                    )
+            mtx[0:, i] = corrected
         return mtx
