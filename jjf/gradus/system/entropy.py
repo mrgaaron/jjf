@@ -1,3 +1,5 @@
+from .base import MusicSystem
+from itertools import combinations
 from scipy.signal import convolve
 from scipy.stats import norm
 import numpy as np
@@ -18,6 +20,18 @@ def compute_coprimes():
     return numerators, denominators
 
 
+def ensure_delta(ratios):
+    M = len(ratios)
+    delta = 0.00001
+    indices = np.ones(M, dtype=bool)
+
+    for i in range(M - 2):
+        ind = abs(ratios[i + 1 :] - ratios[i]) > delta
+        indices[i + 1 :] = indices[i + 1 :] * ind
+
+    return ratios[indices]
+
+
 def bendetti_heights(numerators, denominators):
     return numerators * denominators
 
@@ -29,6 +43,7 @@ def tenney_heights(bendetti_heights):
 def harmonic_entropy(ratio_interval, spread=0.01, min_tol=1e-15):
     numerators, denominators = compute_coprimes()
     ratios = numerators / denominators
+    ratios = ensure_delta(ratios)
 
     ind = np.argsort(ratios)
     weight_ratios = ratios[ind]
@@ -60,56 +75,38 @@ def shift(arr, num, fill_value=np.nan):
 
 
 class EntropyMatrix:
-    def __init__(self, system):
+    def __init__(self, system: MusicSystem):
         self.system = system
-        self.interval = self.system.pitch_system.lowest.ratio(
-            self.system.pitch_system.highest
-        )
         self.pitches = list(self.system.pitches)
+        self.pitch_map = {p: i for i, p in enumerate(self.pitches)}
+
+        self._matrix = self.matrix()
 
     def matrix(self):
-        interval_size = 3  # no more than 2 octaves or the calculation loses coherence
-        interval_spacing = self.system.pitch_system.temperament.interval_spacing()
-        arange = np.arange(0.5, interval_size, interval_spacing)
-        below_unison = len(arange[arange < 1])
-        mtx = np.zeros((len(self.pitches), len(self.pitches)))
-        _, entropy_curve = harmonic_entropy(
-            np.arange(0.5, interval_size, interval_spacing)
+        interval_spacing = self.system.pitch_system.temperament.interval_spacing(
+            octaves=2
         )
+        mtx = np.empty((len(self.pitches), len(self.pitches)))
+        _, entropy_curve = harmonic_entropy(
+            [i[1] for i in interval_spacing], spread=0.005
+        )
+        mtx[:] = np.max(entropy_curve)
 
-        for i, pitch in enumerate(self.pitches):
-            # don't include pitches aboved or below unison if they aren't in the musical system
-            if i < below_unison:
-                padded = np.pad(
-                    entropy_curve,
-                    (0, mtx.shape[0] - entropy_curve.shape[0]),
-                    "constant",
-                    constant_values=0,
-                )
-                corrected = shift(padded, -(below_unison - i), fill_value=0.0)
-            else:
-                # TODO: this is bugged for notes over A7, not handling the upper bound correctly
-                if mtx.shape[0] - entropy_curve.shape[0] - i + below_unison < 0:
-                    padded = np.pad(
-                        entropy_curve,
-                        (mtx.shape[0] - below_unison, 0),
-                        "constant",
-                        constant_values=0,
-                    )
-                    corrected = shift(
-                        padded,
-                        abs(mtx.shape[0] - entropy_curve.shape[0] - i - below_unison),
-                        fill_value=0.0,
-                    )[-128:]
-                else:
-                    corrected = np.pad(
-                        entropy_curve,
-                        (
-                            i - below_unison,
-                            mtx.shape[0] - entropy_curve.shape[0] - i + below_unison,
-                        ),
-                        "constant",
-                        constant_values=0,
-                    )
-            mtx[0:, i] = corrected
+        for i, _ in enumerate(self.pitches):
+            for k, j in enumerate([idx[0] for idx in interval_spacing]):
+                if j + i < 0:
+                    continue
+                try:
+                    mtx[j + i, i] = entropy_curve[k]
+                except IndexError:
+                    continue
+        mtx[np.where(mtx < 0.1)] = np.max(mtx)
         return mtx
+
+    def total_pairwise_entropy(self, pitches):
+        s = 0.0
+        for pair in combinations(pitches, 2):
+            col_idx = self.pitch_map[pair[0]]
+            row_idx = self.pitch_map[pair[1]]
+            s += self._matrix[col_idx, row_idx]
+        return s

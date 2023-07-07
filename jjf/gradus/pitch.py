@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import total_ordering
 from enum import StrEnum
 import numpy as np
+from typing import Tuple
 
 
 class MusicError(Exception):
@@ -26,6 +27,9 @@ class Pitch:
 
     def __eq__(self, other):
         return self.frequency == other.frequency
+
+    def __hash__(self):
+        return hash(self.frequency)
 
     def __repr__(self):
         if self.name is None:
@@ -60,8 +64,11 @@ class EqualTemperament(Temperament):
             current = Pitch(current.frequency * self.beta)
         yield current  # make sure we yield the final value
 
-    def interval_spacing(self) -> int:
-        return 1 / self.notes_per_octave
+    def interval_spacing(self, octaves=2) -> Tuple[int, float]:
+        return [
+            (i, np.power(np.power(2, 1 / 12), i))
+            for i in range(-self.notes_per_octave, 1 + self.notes_per_octave * octaves)
+        ]
 
 
 class UnequalTemperament(Temperament):

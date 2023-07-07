@@ -1,4 +1,5 @@
 from astropy import units as u
+from .base import MusicSystem
 from itertools import cycle
 from ..pitch import Pitch, PitchSystem, EqualTemperament
 import numpy as np
@@ -23,11 +24,13 @@ NOTE_NAMES = [
 BETA = np.power(2, 1 / len(NOTE_NAMES))
 
 
-class WesternSystem:
+class WesternSystem(MusicSystem):
     def __init__(self) -> None:
         self.pitch_system = PitchSystem(
             LOWEST, HIGHEST, EqualTemperament(BETA, len(NOTE_NAMES))
         )
+        self._pitches = list(self.pitches)
+        self._pitch_map = {pitch.name: pitch for pitch in self._pitches}
 
     @property
     def pitches(self) -> list[Pitch]:
@@ -39,3 +42,6 @@ class WesternSystem:
             # it is only when we have a music system identified that we can assign note names
             pitch.name = f"{next(note_cycle)}{octave}"
             yield pitch
+
+    def pitch_by_name(self, name):
+        return self._pitch_map[name]
