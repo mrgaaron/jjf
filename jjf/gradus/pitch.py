@@ -38,6 +38,21 @@ class Pitch:
             return f"Pitch({self.frequency}{{{self.name}}})"
 
 
+class PitchCollection:
+    def __init__(self, pitches: list[Pitch]):
+        self.pitches = pitches
+        self._pitch_map = {pitch.name: pitch for pitch in self.pitches}
+
+    def __iter__(self):
+        return iter(self.pitches)
+
+    def __list__(self):
+        return self.pitches
+
+    def __getitem__(self, name):
+        return self._pitch_map[name]
+
+
 class Temperament(ABC):
     @abstractmethod
     def pitches(

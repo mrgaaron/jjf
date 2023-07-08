@@ -109,4 +109,4 @@ class EntropyMatrix:
             col_idx = self.pitch_map[pair[0]]
             row_idx = self.pitch_map[pair[1]]
             s += self._matrix[col_idx, row_idx]
-        return s
+        return s / len(pitches)
