@@ -79,6 +79,7 @@ class EntropyMatrix:
         self.system = system
         self.pitches = list(self.system.pitches)
         self.pitch_map = {p: i for i, p in enumerate(self.pitches)}
+        self.inv_pitch_map = {i: p for i, p in enumerate(self.pitches)}
 
         self._matrix = self.matrix()
 
@@ -102,6 +103,12 @@ class EntropyMatrix:
                     continue
         mtx[np.where(mtx < 0.1)] = np.max(mtx)
         return mtx
+
+    def indices_to_pitches(self, pitches):
+        return [self.inv_pitch_map[p] for p in pitches]
+
+    def pitches_to_indices(self, pitches):
+        return [self.pitch_map[p] for p in pitches]
 
     def total_pairwise_entropy(self, pitches):
         s = 0.0

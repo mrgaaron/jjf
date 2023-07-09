@@ -1,6 +1,5 @@
 from astropy import units as u
 from .base import MusicSystem
-import functools
 from itertools import cycle
 from ..pitch import Pitch, PitchSystem, PitchCollection, EqualTemperament
 import numpy as np

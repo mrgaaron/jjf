@@ -1,5 +1,4 @@
 from astropy.units.quantity import isclose
-from jjf.gradus.pitch import Pitch
 from jjf.gradus.system.entropy import EntropyMatrix
 from jjf.gradus.system.western import WesternSystem
 

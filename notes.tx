@@ -1,0 +1,11 @@
+Totally random dyads:
+Incoming pitch set: [Pitch({G7}), Pitch({GFlat6})], Predicted pitch: [Pitch({EFlat7})], Training pitch: [Pitch({GFlat7})]
+Incoming pitch set: [Pitch({AFlat8}), Pitch({DFlat9})], Predicted pitch: [Pitch({BFlat8})], Training pitch: [Pitch({DFlat8})]
+Incoming pitch set: [Pitch({E5}), Pitch({BFlat5})], Predicted pitch: [Pitch({F6})], Training pitch: [Pitch(Hz{E6})]
+Incoming pitch set: [Pitch({D2}), Pitch({BFlat2})], Predicted pitch: [Pitch({C3})], Training pitch: [Pitch({D3})]
+Incoming pitch set: [Pitch({E0}), Pitch({B0})], Predicted pitch: [Pitch({D1})], Training pitch: [Pitch({E1})]
+Incoming pitch set: [Pitch({A1}), Pitch({D2})], Predicted pitch: [Pitch({GFlat2})], Training pitch: [Pitch({A2})]
+Incoming pitch set: [Pitch({C2}), Pitch({AFlat1})], Predicted pitch: [Pitch({GFlat2})], Training pitch: [Pitch({C3})]
+Incoming pitch set: [Pitch({F-1}), Pitch({DFlat0})], Predicted pitch: [Pitch({G0})], Training pitch: [Pitch({F0})]
+Incoming pitch set: [Pitch({A3}), Pitch({C4})], Predicted pitch: [Pitch({F4})], Training pitch: [Pitch({A4})]
+Incoming pitch set: [Pitch({B4}), Pitch({DFlat6})], Predicted pitch: [Pitch({F6})], Training pitch: [Pitch({B5})]

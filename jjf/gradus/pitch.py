@@ -33,9 +33,9 @@ class Pitch:
 
     def __repr__(self):
         if self.name is None:
-            return f"Pitch({self.frequency})"
+            return f"Pitch({self.frequency.round(2)})"
         else:
-            return f"Pitch({self.frequency}{{{self.name}}})"
+            return f"Pitch({self.frequency.round(2)}{{{self.name}}})"
 
 
 class PitchCollection:
@@ -45,6 +45,9 @@ class PitchCollection:
 
     def __iter__(self):
         return iter(self.pitches)
+
+    def __len__(self):
+        return len(self.pitches)
 
     def __list__(self):
         return self.pitches
